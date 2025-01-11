@@ -1,6 +1,7 @@
 ## Vector
 x <- c(1, 2, 3, 4, 5, 6)            ## vector of variable
 y <- c(7, 8, 9, 10, 11, 12)
+#함수의 인자로 쓰이는 =와 구분하기 위해 대입연산자로는 <-를 권장
 x + y                                  
 x * y
 sqrt(x)                            ## root
@@ -194,9 +195,9 @@ table(ex$EXMD_BZ_YYYY)                                    ## table
 
 ## New variable
 mean(ex$BMI)                                              ## mean
-BMI_cat <- (ex$BMI >= 25)                                 ## TRUE of FALSE
+BMI_cat <- (ex$BMI >= 25)
 table(BMI_cat)                         
-rows <- which(ex$BMI >= 25)                               ## row numbers
+rows <- which(ex$BMI >= 25)
 head(rows)                                      
 values <- ex$BMI[ex$BMI >= 25]                            ## values
 head(values)
@@ -307,6 +308,7 @@ head(ex1.sort)
 
 
 ## Wide to long, long to wide format
+#install.packages('reshape2')
 library(reshape2)
 long <- melt(ex1, id = c("EXMD_BZ_YYYY", "RN_INDI"), measure.vars = c("BP_SYS", "BP_DIA"), variable.name = "BP_type", value.name = "BP")
 long

@@ -288,3 +288,23 @@ pnorm(2.56,mean=0,sd=1) #x<=p 누적확률
 pnorm(2.56,mean=0,sd=1,lower.tail=FALSE) #x>p
 ###qnorm(정규분포 분위수 계산)
 qnorm(0.025,mean=0,sd=1) #누적확률 2.5%에 해당하는 값
+
+##표본추출
+runif(5,0,1) #균일분포 추출 : 주어진 범위에서 난수생성
+sample(c(1:10),9) #주어진 데이터에서 주어진 개수만큼 표본추출
+
+##날짜
+Sys.Date()
+Sys.time()
+as.Date("2025-01-01")
+format(Sys.Date(), '%Y.%M.%D')
+format(Sys.Date(),'%A')
+unclass(Sys.time())
+as.POSIXct(unclass(Sys.time()), origin='1970-01-01')
+
+##산점도
+x = c(1:10)
+y = rnorm(10)
+plot(x,y)
+plot(x,y,type='l',xlim=c(-2,12),ylim=c(-3,3),xlab='x axis',ylab='y axis',main='Test plot')
+abline(v=c(1,10),col='blue')
