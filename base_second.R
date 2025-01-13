@@ -136,3 +136,68 @@ sapply(c(1:nrow(matxy)), function(x){max(matxy[x,])}) #sapply(iterable한 int,fu
 lapply(1:nrow(matxy), function(x){max(matxy[x,])})
 unlist(lapply(1:nrow(matxy), function(x){max(matxy[x,])})
 )
+
+#### 파일 읽어오기 ####
+ex <- read.csv("https://raw.githubusercontent.com/jinseob2kim/lecture-snuhlab/master/data/example_g1e.csv")
+ex;
+
+#### 읽은 데이터 살펴보기 ### -> 여기부터가 핵심
+#column만 추출하기
+names(ex)
+#notion에 각 column이 뜻하는 바 적어둠
+head(ex)
+tail(ex)
+str(ex) #자료형도 살펴볼 수 있음 : int는 정수, num은 실수형
+dim(ex) #row column
+nrow(ex) #row number
+ncol(ex) #column number
+
+class(ex) #data.frame은 행렬이면서 데이터에 특화된 list임
+summary(ex) #모든 변수들의 평균, 중위수, 결측치 등 한 번에 확인 가능
+
+###특정 변수 보기###
+ex$EXMD_BZ_YYYY ##data.frame style
+ex[1:50,1] ##matrix style
+ex[[1]][1:50] ##list style
+unique(ex$EXMD_BZ_YYYY) ##unique value: 어떤 값들로 이루어져있는지 확인 가능
+#몇개의 값인지 파악하기 
+length(unique(ex$EXMD_BZ_YYYY))
+table(ex$EXMD_BZ_YYYY) ##각 unique value당 몇 개의 값이 존재하는지 확인 가능
+
+##새로운 변수 만들기##
+mean(ex$BMI)
+BMI_high <- (ex$BMI >= 25) ##TRUE of FALSE
+table(BMI_high)
+
+rows <- which(ex$BMI>=25) ##BMI가 25가 넘는 환자들의 row 번호
+#BMI가 25 이상인 환자들의 rn_indi(연습)
+RN_INDI_BMI_HIGH <- ex$RN_INDI[(ex$BMI>=25)]; RN_INDI_BMI_HIGH
+
+#BMI가 25 이상인 환자들의 values
+values <- ex$BMI[ex$BMI>=25]
+summary(values)
+
+length(values)
+
+#BMI가 25이상이고 키가 175 이상인 사람들
+BMI_HGHT_and <- (ex$BMI>=25 & ex$HGHT>=175)
+table(BMI_HGHT_and)
+       
+#BMI가 25이상이거나 키가 175 이상인 사람들
+BMI_HGHT_or <- (ex$BMI>=25 | ex$HGHT>=175 )
+table(BMI_HGHT_or)
+
+###데이터에 새로운 변수 추가하기
+ex$BMI_HIGH <- (ex$BMI>=25) #TRUE/FALSE
+ex$BMI_HIGH <- as.integer(ex$BMI>=25) #1/0
+ex$BMI_HIGH <- as.character(ex$BMI>=25)
+ex$BMI_HIGH <- ifelse(ex$BMI>=25, "1", "0")
+table(ex$BMI_HIGH)
+
+##matrix style 접근
+ex[,"BMI_HIGH"]
+변수 추가 
+ex[,"zero"] <- 0
+
+##list style 접근
+ex[["BMI_HIGH"]] 
