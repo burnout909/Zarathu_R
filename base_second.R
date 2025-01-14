@@ -201,3 +201,96 @@ ex[,"zero"] <- 0
 
 ##list style 접근
 ex[["BMI_HIGH"]] 
+
+### 변수 클래스 설정 ###
+vars.cat <- c("RN_INDI", "Q_PHX_DX_STK", "Q_PHX_DX_HTDZ", "Q_PHX_DX_HTN", "Q_PHX_DX_DM", "Q_PHX_DX_DLD", "Q_PHX_DX_PTB", "Q_HBV_AG","Q_SMK_YN","Q_DRK_FRQ_V09N")
+vars.cat <- names(ex)[c(2, 4:12)] ##same
+vars.cat <- c("RN_INDI", grep("Q_", names(ex), value = T)) ##same: extract variables starting with "Q_"
+
+vars.conti <- setdiff(names(ex), vars.cat) ##Exclude categorical columns 
+vars.conti <- names(ex)[!c(names(ex) %in% vars.cat)] ##same
+
+for (vn in vars.cat) {
+  ex[,vn] <- as.factor(ex[,vn])
+}
+
+for (vn in vars.conti){
+  ex[,vn] <- as.numeric(ex[,vn])
+}
+
+summary(ex) ## Factor의 경우 0, 1로 counting 되는 모습을 확인할 수 있음
+
+addDate <- paste(ex$HME_YYYYMM, "01", sep="")
+ex$HME_YYYYMM <- as.Date(addDate, format = "%Y%m%d")
+summary(ex)
+
+###그룹별 통계###
+tapply(ex$LDL, ex$EXMD_BZ_YYYY, function(x){mean(x, na.rm=T)})
+summary(lm(LDL~HDL, data=ex))      
+### 16 observations deleted due to missingness -> LDL이 결측인 16명은 분석에서 제외
+
+### 결측치 제거 ###
+ex.naomit <- na.omit(ex)
+nrow(ex.naomit)
+summary(ex.naomit)
+
+getmode <- function(v){
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+vars.ok <- sapply(names(ex), function(x){sum(is.na(ex[,x])) < nrow(ex)/10})
+ex.impute <- ex[,vars.ok]
+
+for (v in names(ex.impute)) {
+  if(is.factor(ex.impute[,v])) {
+    ex.impute[,v] <- ifelse(is.na(ex.impute[,v]), getmode(ex.impute[,v]), ex.impute[,v])
+  } else if (is.numeric(ex.impute[,v])){
+    ex.impute[,v] <- ifelse(is.na(ex.impute[,v]), median(ex.impute[,v], na.rm=T), ex.impute[,v])
+  } else {
+    ex.impute[,v]
+  }
+}
+
+summary(ex.impute)
+
+### Subset ###
+ex1 <- na.omit(ex)
+ex1.2012 <- ex1[ex1$EXMD_BZ_YYYY>=2012,]
+
+ex1.2012 <- subset(ex1, EXMD_BZ_YYYY>=2012) ##subset
+table(ex1.2012$EXMD_BZ_YYYY)
+
+aggregate(ex1[,c("WSTC","BMI")], list(ex1$Q_PHX_DX_HTN), mean)
+aggregate(cbind(WSTC,BMI) ~ Q_PHX_DX_HTN, data = ex1, mean) ##same
+
+aggregate(cbind(WSTC, BMI) ~ Q_PHX_DX_HTN + Q_PHX_DX_DM, data = ex1, mean)
+aggregate(cbind(WSTC, BMI) ~ Q_PHX_DX_HTN + Q_PHX_DX_DM, data = ex1, function(x){c(mean = mean(x), sd = sd(x))})
+aggregate(. ~ Q_PHX_DX_HTN  + Q_PHX_DX_DM, data = ex1, function(x){c(mean = mean(x), sd = sd(x))})    
+
+ord <- order(ex1$HGHT)                                        ## 작은 순서대로 순위
+head(ord)
+head(ex1$HGHT[ord])
+
+ord.desc <- order(-ex1$HGHT)
+head(ord.desc)
+head(ex1$HGHT[ord.desc])
+
+### Wide Long Format ###
+library(reshape2)
+long <- melt(ex1, id = c("EXMD_BZ_YYYY", "RN_INDI"), measure.vars = c("BP_SYS", "BP_DIA"), variable.name = "BP_type", value.name = "BP")
+long
+
+wide <- dcast(long, EXMD_BZ_YYYY + RN_INDI ~ BP_type, value.var = "BP")
+head(wide)
+
+### Merge ###
+ex1.Q <- ex1[, c(1:3, 4:12)]
+ex1.measure <- ex1[, c(1:3, 13:ncol(ex1))]
+head(ex1.Q)
+head(ex1.measure)
+
+ex1.merge <- merge(ex1.Q, ex1.measure, by = c("EXMD_BZ_YYYY", "RN_INDI", "HME_YYYYMM"), all = T)
+head(ex1.merge)
+
